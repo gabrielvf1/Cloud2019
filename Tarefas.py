@@ -1,93 +1,49 @@
-from flask import Flask, json, request
-dictTarefas = {}
-result = list(range(100))
-
-dictTarefas[result[0]] = "Acordar"
-dictTarefas[result[1]] = "Dormir"
-
-
-class Tarefas:
-    def __init__(self, atributo1, atributo2):
-        self.atributo1 = atributo1
-        self.atributo2 = atributo1
-
-
-def acha_key(id):
-    for i in dictTarefas:
-        if id == i:
-            return True
-    return False
-
+from flask import Flask, jsonify, abort, request, make_response, url_for
+from flask_restful import Api, Resource
 
 app = Flask(__name__)
+api = Api(app)
+
+Tarefas = {1: "Dormir", 2: "Andar"}
+a = 3
 
 
-@app.route("/healthcheck")
-def healthcheck():
-    return "200"
+class Tarefa(Resource):
+    def get(self):
+        return jsonify(Tarefas)
+
+    def post(self):
+        tarefa = request.args.get("Tarefa")
+        Tarefas[len(Tarefas)+1] = tarefa
+        return jsonify({"Tarefas": Tarefas})
 
 
-@app.route('/Tarefa', methods=['GET', 'POST'])
-def tarefa():
-    if request.method == 'GET':
-        data = dictTarefas
-        response = app.response_class(
-            response=json.dumps(data),
-            status=200,
-            mimetype='application/json'
-        )
-        return response
-
-    if request.method == 'POST':
-        nomeTarefa = request.args.get("Tarefa")
-        dictTarefas[len(dictTarefas)] = nomeTarefa
-        data = dictTarefas
-        response = app.response_class(
-        response=json.dumps(data),
-        status=200,
-        mimetype='application/json'
-         )
-        return response
+class Nada(Resource):
+    def get(self):
+        return "Hello WOrld"
 
 
-@app.route('/Tarefa/<id_tarefa>', methods=['GET', 'PUT', 'DELETE'])
-def tarefa_id(id_tarefa):
-    if request.method == 'GET':
-        existe = acha_key(int(id_tarefa))
-        if (not(existe)):
-            return 404
-        data = dictTarefas[int(id_tarefa)]
-        response = app.response_class(
-            response=json.dumps(data),
-            status=200,
-            mimetype='application/json'
-        )
-        return response
+class TarefaId(Resource):
+    def get(self, id):
+        return jsonify({"Tarefa": Tarefas[id]})
 
-    if request.method == 'PUT':
-        existe = acha_key(int(id_tarefa))
-        if (not(existe)):
-            return "Tarefa_Inexistente"
-        nomeTarefa = request.args.get("Tarefa")
-        dictTarefas[int(id_tarefa)] = nomeTarefa
-        response = app.response_class(
-            response=json.dumps(str(id_tarefa) + ": " + dictTarefas[int(id_tarefa)]),
-            status=200,
-            mimetype='application/json'
-        )
-        return response
+    def put(self, id):
+      Tarefas[id] = request.args.get("Tarefa")
+      return jsonify({"Tarefas": Tarefas})
 
-    if request.method == 'DELETE':
-        existe = acha_key(int(id_tarefa))
-        if (not(existe)):
-            return "Tarefa_Inexistente"
-        del dictTarefas[int(id_tarefa)]
-        response = app.response_class(
-            response=json.dumps(str(id_tarefa) + ": " + dictTarefas[int(id_tarefa)]),
-            status=200,
-            mimetype='application/json'
-        )
-        return dictTarefas
+    def delete(self, id):
+        del Tarefas[id]
+        return jsonify({"Tarefas": Tarefas})
+
+class HealthCheck(Resource):
+    def get(self):
+        return  jsonify({"Status": 200})
+
+api.add_resource(Tarefa, '/Tarefa/')
+api.add_resource(HealthCheck, '/HealthCheck')
+api.add_resource(TarefaId, '/Tarefa/<int:id>')
+api.add_resource(Nada, '/')
+
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8000, debug=True)
+    app.run(debug=True)
