@@ -1,8 +1,12 @@
 from flask import Flask, jsonify, abort, request, make_response, url_for
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource, reqparse
 
 app = Flask(__name__)
 api = Api(app)
+
+
+parser = reqparse.RequestParser()
+parser.add_argument('Tarefa', type=str)
 
 Tarefas = {1: "Dormir", 2: "Andar"}
 a = 3
@@ -13,7 +17,10 @@ class Tarefa(Resource):
         return jsonify(Tarefas)
 
     def post(self):
-        tarefa = request.args.get("Tarefa")
+        request.get_json(force=True)
+        args = parser.parse_args()
+        tarefa =  str(args['Tarefa'])
+        # tarefa = request.args.get("Tarefa")
         Tarefas[len(Tarefas)+1] = tarefa
         return jsonify({"Tarefas": Tarefas})
 
@@ -28,8 +35,11 @@ class TarefaId(Resource):
         return jsonify({"Tarefa": Tarefas[id]})
 
     def put(self, id):
-      Tarefas[id] = request.args.get("Tarefa")
-      return jsonify({"Tarefas": Tarefas})
+        request.get_json(force=True)
+        args = parser.parse_args()
+        tarefa =  str(args['Tarefa'])
+        Tarefas[id] = tarefa
+        return jsonify({"Tarefas": Tarefas})
 
     def delete(self, id):
         del Tarefas[id]
