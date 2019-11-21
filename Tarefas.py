@@ -14,7 +14,7 @@ f= open("/home/dados.txt","r")
 dados = f.readlines()
 for i in dados:
     linha = i.split()
-    if linha[0] == 'ipPublic:':
+    if linha[0] == 'ipPublicOhio:':
         PublicIP = linha[1]
 
 # PublicIP = '18.188.94.107'
