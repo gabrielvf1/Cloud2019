@@ -51,7 +51,6 @@ class TarefaId(Resource):
         return a.json()
 
     def delete(self, id):
-        del Tarefas[id]
         resposta = requests.delete('http://' + PublicIP + ':8080' + '/Tarefa/' + str(id))
         return resposta.json()
 
